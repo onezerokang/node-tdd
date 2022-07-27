@@ -13,12 +13,13 @@ const allProducts = require("../data/all-products.json");
 // 몽구스는 문제 없다는 가정하에 mock function을 만든 것
 ProductModel.create = jest.fn();
 ProductModel.find = jest.fn();
-
+ProductModel.findById = jest.fn();
 // TDD에서는 테스트 케이스를 먼저 작성하고 해당 테스트가 통과할 수 있게 실제 코드를 작성한다.
 
 // beforeEach: 여러 테스트 안에 공통된 코드가 있다면 beforeEach를 사용해 반복을 줄여줄 수 있다.ㅇ
 // 테스트가 실행되기전에 beforeEach 코드가 먼저 실행된다.
 
+const productId = "3wepclkfnwlk324dslkjf";
 let req, res, next;
 
 beforeEach(() => {
@@ -95,6 +96,41 @@ describe("Product Controller GET", () => {
     const rejectedPromise = Promise.reject(errorMessage);
     ProductModel.find.mockReturnValue(rejectedPromise);
     await productController.getProducts(req, res, next);
+    expect(next).toHaveBeenCalledWith(errorMessage);
+  });
+});
+
+describe("Product Controller GetById", () => {
+  it("should have a getProductById function", () => {
+    expect(typeof productController.getProductById).toBe("function");
+  });
+
+  it("should call ProductModel.findById", async () => {
+    req.params.productId = productId;
+    await productController.getProductById(req, res, next);
+    expect(ProductModel.findById).toBeCalledWith(productId);
+  });
+
+  it("should return json body and response code 200", async () => {
+    ProductModel.findById.mockReturnValue(newProduct);
+    await productController.getProductById(req, res, next);
+    expect(res.statusCode).toBe(200);
+    expect(res._getJSONData()).toStrictEqual(newProduct);
+    expect(res._isEndCalled()).toBeTruthy();
+  });
+
+  it("should return 404 when item doesnt exist", async () => {
+    ProductModel.findById.mockReturnValue(null);
+    await productController.getProductById(req, res, next);
+    expect(res.statusCode).toBe(404);
+    expect(res._isEndCalled).toBeTruthy();
+  });
+
+  it("should handle errors", async () => {
+    const errorMessage = { message: "Error!" };
+    const rejectedPromise = Promise.reject(errorMessage);
+    ProductModel.findById.mockReturnValue(rejectedPromise);
+    await productController.getProductById(req, res, next);
     expect(next).toHaveBeenCalledWith(errorMessage);
   });
 });

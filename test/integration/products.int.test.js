@@ -3,6 +3,8 @@ const app = require("../../server");
 
 const newProductData = require("../data/new-product.json");
 
+let firstProduct;
+
 it("POST /api/products", async () => {
   const response = await request(app)
     .post("/api/products")
@@ -33,4 +35,19 @@ it("GET /api/products", async () => {
   expect(Array.isArray(response.body)).toBeTruthy();
   expect(response.body[0].name).toBeDefined();
   expect(response.body[0].description).toBeDefined();
+  firstProduct = response.body[0];
+});
+
+it("GET /api/products/:productId", async () => {
+  const response = await request(app).get(`/api/products/${firstProduct._id}`);
+  expect(response.statusCode).toBe(200);
+  expect(response.body.name).toBe(firstProduct.name);
+  expect(response.body.description).toBe(firstProduct.description);
+});
+
+it("Get id doesnt exist /api/products/:productId", async () => {
+  const response = await request(app).get(
+    "/api/products/62e097ff545bbb8b1002b137"
+  );
+  expect(response.statusCode).toBe(404);
 });
