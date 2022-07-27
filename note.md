@@ -43,3 +43,54 @@ Mock 함수를 생성하는 함수. 단위 테스트를 작성할 때 해당 코
 
 단위테스트는 특정 기능만 분리하여 독립적으로 사용해야 한다.
 jest.fn()으로 Mock 함수를 생성하여 해결할 수 있다.
+
+## 통합테스트란
+
+모듈을 통합하는 단계하는 테스트
+단위 테스트로 각 모듈이 잘 작동되는 것을 확인했다면
+모듈을 연동하여 테스트를 수행하는 것
+이렇게 연동해서 테스트하는 것이 통합 테스트
+
+### 통합 테스트를 하는 이유
+
+1. 모듈들의 상호작용 검증
+2. 통합하는 과정에서 발생할 수 있는 오류 찾기
+
+### Supertest
+
+nodejs http 서버를 테스트하기 위해 만들어진 모듈
+
+## Express 에러
+
+원래 미들웨어에서 에러가 발생하면 해당 에러를 Express.js의 에러 핸들러로 보내 처리한다.
+하지만 비동기 요청으로 인한 에러를 이렇게 처리해주면 에러 핸들러에서 저 에러를 받지 못하기 때문에 서버가 Crash 된다.
+
+```js
+app.use("*", (req, res, next) => {
+  throw new Error("Error!");
+});
+
+app.use("*", (req, res, next) => {
+  setImmediate(() => {
+    throw new Error("Error!");
+  });
+});
+
+app.use("*", (err, req, res, next) => {
+  res.status(500).json({ message: err.message });
+});
+```
+
+이를 해결하기 위해서는 그냥 에러를 throw 하는 것이 아니라 next의 인자로 에러를 넘겨주면 된다. 그러면 비동기 요청으로 인한 에러도 잘 처리된다.
+
+```js
+app.use("*", (req, res, next) => {
+  setImmediate(() => {
+    next(new Error("Error!"));
+  });
+});
+
+app.use("*", (err, req, res, next) => {
+  res.status(500).json({ message: err.message });
+});
+```
