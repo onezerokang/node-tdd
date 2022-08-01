@@ -32,3 +32,41 @@ exports.getProductById = async (req, res, next) => {
     next(err);
   }
 };
+
+exports.updateProduct = async (req, res, next) => {
+  try {
+    const { productId } = req.params;
+    const updatedProduct = await productModel.findByIdAndUpdate(
+      productId,
+      req.body,
+      {
+        new: true,
+      }
+    );
+
+    if (!updatedProduct) {
+      return res.status(404).send();
+    }
+
+    res.status(200).json(updatedProduct);
+  } catch (err) {
+    next(err);
+  }
+};
+
+exports.deleteProduct = async (req, res, next) => {
+  try {
+    const { productId } = req.params;
+    const deletedProduct = await productModel.findByIdAndDelete(productId);
+
+    console.log("삭제된 상품:", deletedProduct);
+
+    if (!deletedProduct) {
+      return res.status(404).send();
+    }
+
+    res.status(200).json(deletedProduct);
+  } catch (err) {
+    next(err);
+  }
+};

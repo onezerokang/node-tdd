@@ -51,3 +51,36 @@ it("Get id doesnt exist /api/products/:productId", async () => {
   );
   expect(response.statusCode).toBe(404);
 });
+
+it("PUT /api/products/:productId", async () => {
+  const res = await request(app)
+    .put(`/api/products/${firstProduct._id}`)
+    .send({ name: "updated name", description: "updated description" });
+  expect(res.statusCode).toBe(200);
+  expect(res.body.name).toBe("updated name");
+  expect(res.body.description).toBe("updated description");
+});
+
+it("should return 404 on PUT /api/products/:productId", async () => {
+  const res = await request(app)
+    .put("/api/products/62e097ff545bbb8b1002b137")
+    .send({ name: "updated name", description: "updated description" });
+
+  expect(res.statusCode).toBe(404);
+});
+
+it("DELETE /api/products/:productId", async () => {
+  console.log("첫번쨰 상품:", firstProduct);
+  const res = await request(app)
+    .delete(`/api/products/${firstProduct._id}`)
+    .send();
+  expect(res.statusCode).toBe(200);
+});
+
+it("DELETE id doesnt dexist /api/products/:productId", async () => {
+  const res = await request(app)
+    .delete(`/api/products/${firstProduct._id}`)
+    .send();
+
+  expect(res.statusCode).toBe(404);
+});
